@@ -20,10 +20,6 @@ func main() {
 	start := time.Now()
 	g := graph.NewPolygonGraph(n, float64(100), true)
 	fmt.Println("[INF] Created test Graph in", time.Since(start))
-	fmt.Println("[INF] Example Graph: ")
-	for i := 0; i < n; i++ {
-		fmt.Println(g.Edges[i])
-	}
 	start = time.Now()
 	cost, path := TSPBB(g.Edges)
 	fmt.Println("[INF] Completed TSP in", time.Since(start))
