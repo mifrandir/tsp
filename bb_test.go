@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/miltfra/tools"
 	"testing"
+
+	"github.com/miltfra/tools"
 )
 
 func BenchmarkTSPBB10(b *testing.B) {
@@ -34,11 +35,11 @@ func BenchmarkTSPBB30(b *testing.B) {
 		b.StopTimer()
 	}
 }
-func TestTSPBB1000(t *testing.T) {
+func TestTSPBB20(t *testing.T) {
 	n := 20
 	g := tools.RndGraph(n)
 	cost, path := TSPBB(g)
-	actualCost := 0
+	actualCost := float64(0)
 	last := path[len(path)-1]
 	for i := 0; i < len(path); i++ {
 		actualCost += g[last][path[i]]

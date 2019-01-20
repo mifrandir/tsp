@@ -6,7 +6,7 @@ import (
 
 // TSPBB calculates the Traveling Salesman Problem on a given
 // edge matrix and returns the best value and the best path
-func TSPBB(mtrx [][]int) (int, []int) {
+func TSPBB(mtrx [][]float64) (float64, []int) {
 	l := len(mtrx)
 	stat := status.New(l * l)
 	overlay := func() [][]bool {

@@ -2,17 +2,18 @@ package status
 
 import (
 	"math/rand"
+
 	"github.com/miltfra/tools"
 )
 
 // Element implements a branch in the TSP-Tree
 type Element struct {
-	AdjMatrix  [][]int
+	AdjMatrix  [][]float64
 	Overlay    [][]bool
 	Visited    []bool
 	LastVertex int
 	Count      int
-	Boundary   int
+	Boundary   float64
 }
 
 // Status a queue of status elements
@@ -29,7 +30,7 @@ func New(N int) *Status {
 }
 
 // NewElement returns a new Element for the Status heap
-func NewElement(AdjMatrix [][]int, overlay [][]bool, visited []bool, lastVertex, Count int) *Element {
+func NewElement(AdjMatrix [][]float64, overlay [][]bool, visited []bool, lastVertex, Count int) *Element {
 	e := Element{AdjMatrix, overlay, visited, lastVertex, Count, 0}
 	e.UpdateBoundary()
 	return &e
@@ -39,10 +40,10 @@ func NewElement(AdjMatrix [][]int, overlay [][]bool, visited []bool, lastVertex,
 // TODO: Use more PQs to manage the edges to update more quickly
 func (e *Element) UpdateBoundary() {
 	// Outgoing edges
-	out := 0
+	var out float64
 	l := len(e.AdjMatrix)
 	for i := 0; i < l; i++ {
-		j, min := func() (int, int) {
+		j, min := func() (int, float64) {
 			for k := 0; k < l; k++ {
 				if e.Overlay[i][k] {
 					return k, e.AdjMatrix[i][k]
@@ -59,9 +60,9 @@ func (e *Element) UpdateBoundary() {
 		out += min
 	}
 	// Incoming edges
-	in := 0
+	var in float64
 	for i := 0; i < l; i++ {
-		j, min := func() (int, int) {
+		j, min := func() (int, float64) {
 			for k := 0; k < l; k++ {
 				if e.Overlay[k][i] {
 					return k, e.AdjMatrix[k][i]
