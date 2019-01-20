@@ -2,20 +2,30 @@ package main
 
 import (
 	"fmt"
-	"github.com/miltfra/tools"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/miltfra/tools/ds/graph"
 )
 
 func main() {
-	n, _ := strconv.Atoi(os.Args[1])
-	fmt.Printf("[INF] Starting random TSP with %s nodes\n", os.Args[1])
+	var n int
+	if len(os.Args) > 1 {
+		n, _ = strconv.Atoi(os.Args[1])
+	} else {
+		n = 10
+	}
+	fmt.Printf("[INF] Starting random TSP with %s nodes\n", strconv.Itoa(n))
 	start := time.Now()
-	rnd := tools.RndGraph(n)
+	g := graph.NewPolygonGraph(n, float64(100), true)
 	fmt.Println("[INF] Created test Graph in", time.Since(start))
+	fmt.Println("[INF] Example Graph: ")
+	for i := 0; i < n; i++ {
+		fmt.Println(g.Edges[i])
+	}
 	start = time.Now()
-	cost, path := TSPBB(rnd)
+	cost, path := TSPBB(g.Edges)
 	fmt.Println("[INF] Completed TSP in", time.Since(start))
 	fmt.Println("[OUT]", cost, path)
 }

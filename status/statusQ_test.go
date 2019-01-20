@@ -18,7 +18,7 @@ func TestStatusPut1000(t *testing.T) {
 	}
 }
 func TestStatusPut10000(t *testing.T) {
-	arr := tools.RndFloat64Arr(10000)
+	arr := tools.RndIntArr(10000)
 	st := New(10000)
 	for i := 0; i < 10000; i++ {
 		st.Put(&Element{make([][]float64, 10000), make([][]bool, 10000), make([]bool, 10000), 0, 1, arr[i]})
