@@ -61,10 +61,6 @@ func getNewOverlay(overlay [][]bool, start, target int) [][]bool {
 	return n
 }
 
-func getBoundaries(mtrx, overlay [][]int) int {
-	return 0
-}
-
 func overlayToPath(overlay [][]bool) []int {
 	path := make([]int, len(overlay))
 	last := 0
@@ -78,6 +74,16 @@ func overlayToPath(overlay [][]bool) []int {
 		}
 	}
 	return path
+}
+
+func actualCost(path []int, adjMatrix [][]float64) float64 {
+	j := path[len(path)-1]
+	sum := float64(0)
+	for i := 0; i < len(path); i++ {
+		sum += adjMatrix[j][path[i]]
+		j = path[i]
+	}
+	return sum
 }
 
 func factorial(i int) int {
