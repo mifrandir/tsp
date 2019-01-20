@@ -2,7 +2,7 @@ package status
 
 import (
 	"math/rand"
-	"miltfra/tools"
+	"github.com/miltfra/tools"
 )
 
 // Element implements a branch in the TSP-Tree

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"miltfra/tools"
+	"github.com/miltfra/tools"
 	"testing"
 )
 

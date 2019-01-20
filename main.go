@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"miltfra/tools"
+	"github.com/miltfra/tools"
 	"os"
 	"strconv"
 	"time"

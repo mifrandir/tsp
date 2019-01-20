@@ -1,7 +1,7 @@
 package main
 
 import (
-	"miltfra/tsp/status"
+	"github.com/miltfra/tsp/status"
 )
 
 // TSPBB calculates the Traveling Salesman Problem on a given
