@@ -2,8 +2,9 @@ package status
 
 import (
 	"math/rand"
-	"miltfra/tools"
 	"testing"
+
+	"github.com/miltfra/tools"
 )
 
 func TestStatusPut1000(t *testing.T) {
