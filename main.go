@@ -44,4 +44,5 @@ func tspDefault() {
 	cost, path := TSPBB(g.Edges)
 	fmt.Println("[INF] Completed TSP in", time.Since(start))
 	fmt.Println("[OUT]", cost, path)
+	fmt.Println("[INF] Actual Cost", actualCost(path, g.Edges))
 }
