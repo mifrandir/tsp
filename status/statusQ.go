@@ -2,8 +2,6 @@ package status
 
 import (
 	"math/rand"
-
-	"github.com/miltfra/tools"
 )
 
 // Element implements a branch in the TSP-Tree
@@ -30,8 +28,8 @@ func New(N int) *Status {
 }
 
 // NewElement returns a new Element for the Status heap
-func NewElement(AdjMatrix [][]float64, overlay [][]bool, visited []bool, lastVertex, Count int) *Element {
-	e := Element{AdjMatrix, overlay, visited, lastVertex, Count, 0}
+func NewElement(AdjMatrix [][]uint, fwd, bck []int8, lastVertex, count int8) *Element {
+	e := Element{AdjMatrix, fwd, bck, lastVertex, count, 0}
 	e.UpdateBoundary()
 	return &e
 }
@@ -39,46 +37,49 @@ func NewElement(AdjMatrix [][]float64, overlay [][]bool, visited []bool, lastVer
 // UpdateBoundary updates the boundary of the Status Element
 // TODO: Use more PQs to manage the edges to update more quickly
 func (e *Element) UpdateBoundary() {
+	l := len(e.AdjMatrix)
+	// Declaring variables so we don't need to allocate space multiple times
+	var min, v uint
+	var j, i int
 	// Outgoing edges
 	var out uint
-	l := len(e.AdjMatrix)
-	for i := 0; i < l; i++ {
-		j, min := func() (int, float64) {
-			for k := 0; k < l; k++ {
-				if e.Overlay[i][k] {
-					return k, e.AdjMatrix[i][k]
+	for i = 0; i < l; i++ {
+		if e.FwdPath[i] != -1 {
+			// If there is a path we can add it's value immediately
+			out += e.AdjMatrix[i][e.FwdPath[i]]
+		} else {
+			// Else we have to cycle through the matrix to find the lowest value
+			min = ^uint(0)
+			for j = 0; j < l; j++ {
+				if v = e.AdjMatrix[i][j]; v != 0 && v < min {
+					min = v
 				}
 			}
-			return l, 0
-		}()
-		j++
-		for ; j < l; j++ {
-			if e.Overlay[i][j] && e.AdjMatrix[i][j] < min {
-				min = e.AdjMatrix[i][j]
-			}
+			out += min
 		}
-		out += min
 	}
 	// Incoming edges
-	var in float64
-	for i := 0; i < l; i++ {
-		j, min := func() (int, float64) {
-			for k := 0; k < l; k++ {
-				if e.Overlay[k][i] {
-					return k, e.AdjMatrix[k][i]
+	var in uint
+	for i = 0; i < l; i++ {
+		if e.BckPath[i] != -1 {
+			// If there is a path we can add it's value immediately
+			in += e.AdjMatrix[e.BckPath[i]][i]
+		} else {
+			// Else we have to cycle through the matrix to find the lowest value
+			min = ^uint(0)
+			for j = 0; j < l; j++ {
+				if v = e.AdjMatrix[j][i]; v != 0 && v < min {
+					min = v
 				}
 			}
-			return l, 0
-		}()
-		j++
-		for ; j < l; j++ {
-			if e.Overlay[j][i] && e.AdjMatrix[j][i] < min {
-				min = e.AdjMatrix[j][i]
-			}
+			in += min
 		}
-		in += min
 	}
-	e.Boundary = tools.Max(in, out)
+	if in > out {
+		e.Boundary = in
+	} else {
+		e.Boundary = out
+	}
 }
 
 // Put inserts an element into the priority queue
