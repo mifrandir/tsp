@@ -8,12 +8,12 @@ import (
 
 // Element implements a branch in the TSP-Tree
 type Element struct {
-	AdjMatrix  [][]float64
-	Overlay    [][]bool
-	Visited    []bool
-	LastVertex int
-	Count      int
-	Boundary   float64
+	AdjMatrix  [][]uint
+	FwdPath    []int8
+	BckPath    []int8
+	LastVertex int8
+	Count      int8
+	Boundary   uint
 }
 
 // Status a queue of status elements
@@ -40,7 +40,7 @@ func NewElement(AdjMatrix [][]float64, overlay [][]bool, visited []bool, lastVer
 // TODO: Use more PQs to manage the edges to update more quickly
 func (e *Element) UpdateBoundary() {
 	// Outgoing edges
-	var out float64
+	var out uint
 	l := len(e.AdjMatrix)
 	for i := 0; i < l; i++ {
 		j, min := func() (int, float64) {

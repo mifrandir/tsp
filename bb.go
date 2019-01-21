@@ -1,6 +1,8 @@
 package main
 
 import (
+	"math"
+
 	"github.com/miltfra/tsp/status"
 )
 
@@ -8,7 +10,7 @@ import (
 // edge matrix and returns the best value and the best path
 func TSPBB(mtrx [][]float64) (float64, []int) {
 	l := len(mtrx)
-	stat := status.New(l * l)
+	stat := status.New(int(math.Pow(float64(l), 6)))
 	overlay := func() [][]bool {
 		l := len(mtrx)
 		ol := make([][]bool, l)
