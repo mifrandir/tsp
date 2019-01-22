@@ -6,7 +6,6 @@ import (
 
 // Element implements a branch in the TSP-Tree
 type Element struct {
-	AdjMatrix  [][]uint
 	FwdPath    []int8
 	BckPath    []int8
 	LastVertex int8
@@ -29,57 +28,7 @@ func New(N int) *Status {
 
 // NewElement returns a new Element for the Status heap
 func NewElement(AdjMatrix [][]uint, fwd, bck []int8, lastVertex, count int8) *Element {
-	e := Element{AdjMatrix, fwd, bck, lastVertex, count, 0}
-	e.UpdateBoundary()
-	return &e
-}
-
-// UpdateBoundary updates the boundary of the Status Element
-// TODO: Use more PQs to manage the edges to update more quickly
-func (e *Element) UpdateBoundary() {
-	l := len(e.AdjMatrix)
-	// Declaring variables so we don't need to allocate space multiple times
-	var min, v uint
-	var j, i int
-	// Outgoing edges
-	var out uint
-	for i = 0; i < l; i++ {
-		if e.FwdPath[i] != -1 {
-			// If there is a path we can add it's value immediately
-			out += e.AdjMatrix[i][e.FwdPath[i]]
-		} else {
-			// Else we have to cycle through the matrix to find the lowest value
-			min = ^uint(0)
-			for j = 0; j < l; j++ {
-				if v = e.AdjMatrix[i][j]; v != 0 && v < min {
-					min = v
-				}
-			}
-			out += min
-		}
-	}
-	// Incoming edges
-	var in uint
-	for i = 0; i < l; i++ {
-		if e.BckPath[i] != -1 {
-			// If there is a path we can add it's value immediately
-			in += e.AdjMatrix[e.BckPath[i]][i]
-		} else {
-			// Else we have to cycle through the matrix to find the lowest value
-			min = ^uint(0)
-			for j = 0; j < l; j++ {
-				if v = e.AdjMatrix[j][i]; v != 0 && v < min {
-					min = v
-				}
-			}
-			in += min
-		}
-	}
-	if in > out {
-		e.Boundary = in
-	} else {
-		e.Boundary = out
-	}
+	return &Element{fwd, bck, lastVertex, count, 0}
 }
 
 // Put inserts an element into the priority queue

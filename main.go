@@ -21,12 +21,13 @@ func tspCLI() {
 	}
 	start := time.Now()
 	g := graph.FromFile(file, 1)
-	fmt.Println("[INF] Read Graph in", time.Since(start))
+	fmt.Println("[INF] Read-Time:", time.Since(start))
 	start = time.Now()
 	cost, path := TSPBB(g.Edges)
-	fmt.Println("[INF] Completed TSP in", time.Since(start))
-	fmt.Println("[OUT]", cost, path)
-	fmt.Println("[INF] Acutal cost", actualCost(path, g.Edges))
+	fmt.Println("[INF] TSP-Time:", time.Since(start))
+	fmt.Println("[OUT] Path:", path)
+	fmt.Println("[OUT] Predicted Cost:", cost)
+	fmt.Println("[INF] Acutal Cost:", actualCost(path, g.Edges))
 }
 
 //func tspDefault() {
