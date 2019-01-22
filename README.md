@@ -7,7 +7,10 @@ This program written in Golang finds the shortest Hamilton-Path on a given graph
 There is no actual CLI-Parser in place yet so the syntax may vary.
 Calling `$ tsp` does something, depending on the configuration I am using at the moment. It is not unlikely though, that it will cause an error because I am using certain graphs to benchmark the program that are not available on your machine. Maybe I'll publish some of them.
 
-Eventually the command is supposed to take a file path as an argument and have certain flags like the number of goroutines and the number of used OS threads as flags. Further there will be the option to chose between the concurrent and the parallel solution. 
+Eventually the command is supposed to take a file path as an argument and have certain flags like the number of goroutines and the number of used OS threads as flags. Further there will be the option to chose between the concurrent and the parallel solution. So something along the lines of:
+```
+$ tps <path> [--concurrent] [--os-threads <n>] [--go-routines <n>]
+```
 
 ## Implementation
 
