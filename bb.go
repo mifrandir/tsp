@@ -1,18 +1,24 @@
 package main
 
 import (
+	"sync"
+
 	"github.com/miltfra/tsp/status"
 )
 
 // AdjMatrix is the matrix of the current TSP calculation
 var AdjMatrix [][]uint
+var l int8
+var solved bool
+var solution *status.Element
+var wg = sync.WaitGroup{}
 
 // TSPBB calculates the Traveling Salesman Problem on a given
 // edge matrix and returns the best value and the best path
 func TSPBB(mtrx [][]uint) (uint, []int8) {
 	AdjMatrix = mtrx
 	var i int8
-	l := int8(len(mtrx))
+	l = int8(len(mtrx))
 	stat := status.New(1 << 32)
 	fwd := make([]int8, l)
 	bck := make([]int8, l)
@@ -37,6 +43,56 @@ func TSPBB(mtrx [][]uint) (uint, []int8) {
 		}
 	}
 	return 2147483647, make([]int8, 0)
+}
+
+// TSPBB2 calculates the Traveling Salesman Problem on a given
+// edge matrix and returns the best value and the best path while
+// utilizing goroutines
+func TSPBB2(mtrx [][]uint) (uint, []int8) {
+	AdjMatrix = mtrx
+	var i int8
+	l = int8(len(mtrx))
+	stat := status.New(1 << 32)
+	fwd := make([]int8, l)
+	bck := make([]int8, l)
+	for i := int8(0); i < l; i++ {
+		fwd[i] = -1
+		bck[i] = -1
+	}
+	stat.Put(status.NewElement(mtrx, fwd, bck, 0, 1))
+	for i = 0; i < 30; i++ {
+		wg.Add(1)
+		go extend(stat)
+	}
+	wg.Wait()
+	if solved {
+		return solution.Boundary, fwdToPath(solution.FwdPath)
+	}
+	return 2147483647, make([]int8, 0)
+}
+
+func extend(stat *status.Status) {
+	var i int8
+	var candidate *status.Element
+	for stat.Length > 0 {
+		if solved {
+			break
+		}
+		candidate = stat.Get()
+		if candidate.Count == l+1 {
+			solution = candidate
+			solved = true
+		} else if candidate.FwdPath[candidate.LastVertex] == -1 {
+			// 0 has been visited in every path so we don't have to consider it
+			for i = 0; i < l; i++ {
+				if candidate.BckPath[i] == -1 &&
+					AdjMatrix[candidate.LastVertex][i] != 0 {
+					stat.Put(getNewElement(candidate, i))
+				}
+			}
+		}
+	}
+	wg.Done()
 }
 
 // UpdateBoundary updates the boundary of the Status Element

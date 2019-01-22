@@ -2,6 +2,7 @@ package status
 
 import (
 	"math/rand"
+	"sync"
 )
 
 // Element implements a branch in the TSP-Tree
@@ -18,11 +19,12 @@ type Status struct {
 	Arr    []*Element
 	N      int
 	Length int
+	m      sync.Mutex
 }
 
 // New returns a new Status heap of segment size N
 func New(N int) *Status {
-	s := Status{make([]*Element, N), N, 0}
+	s := Status{make([]*Element, N), N, 0, sync.Mutex{}}
 	return &s
 }
 
@@ -33,6 +35,7 @@ func NewElement(AdjMatrix [][]uint, fwd, bck []int8, lastVertex, count int8) *El
 
 // Put inserts an element into the priority queue
 func (stat *Status) Put(e *Element) {
+	stat.m.Lock()
 	stat.Length++
 	if stat.Length%stat.N == 0 {
 		arr := make([]*Element, stat.Length+stat.N)
@@ -41,10 +44,12 @@ func (stat *Status) Put(e *Element) {
 	}
 	stat.Arr[stat.Length-1] = e
 	stat.up(stat.Length - 1)
+	stat.m.Unlock()
 }
 
 // Get returns the first element of the priority queue
 func (stat *Status) Get() *Element {
+	stat.m.Lock()
 	if stat.Length == 0 {
 		return nil
 	}
@@ -52,6 +57,7 @@ func (stat *Status) Get() *Element {
 	stat.Length--
 	stat.Arr[0] = stat.Arr[stat.Length]
 	stat.down(0)
+	stat.m.Unlock()
 	return v
 }
 
