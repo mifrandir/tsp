@@ -54,7 +54,7 @@ func fwdToPath(fwd []int8) []int8 {
 	var next int8 // starts with 0 anyways
 	for i := 0; i < len(fwd); i++ {
 		path[i] = next
-		next = fwd[i]
+		next = fwd[next]
 	}
 	return path
 }
