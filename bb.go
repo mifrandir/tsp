@@ -24,12 +24,11 @@ type Status struct {
 	adjMtrx  [][]uint
 	solution *Element
 	solved   bool
+	vtxCount int8
 	// Heap Stuff
 	arr     []*Element
 	segSize int
 	curSize int
-	// Element Stuff
-	vtxCount int8
 	// Sync Stuff
 	lckr sync.Mutex
 	wg   sync.WaitGroup
@@ -39,11 +38,9 @@ type Status struct {
 func NewStatus(adjMtrx [][]uint, segSize int) *Status {
 	return &Status{
 		// TSP Stuff
-		adjMtrx, nil, false,
+		adjMtrx, nil, false, int8(len(adjMtrx)),
 		// Heap Stuff
 		make([]*Element, segSize), segSize, 0,
-		// Element Stuff
-		int8(len(adjMtrx)),
 		// Sync Stuff
 		sync.Mutex{}, sync.WaitGroup{},
 	}
@@ -73,8 +70,7 @@ func (stat *Status) Get() *Element {
 	v := stat.arr[0]
 	stat.curSize--
 	stat.arr[0] = stat.arr[stat.curSize]
-	stat.down(0)
-	stat.lckr.Unlock()
+	go stat.down(0)
 	return v
 }
 
@@ -118,6 +114,7 @@ func (stat *Status) down(i int) {
 		}
 	}
 	stat.arr[i] = v
+	stat.lckr.Unlock()
 }
 
 func (stat *Status) up(i int) {
@@ -143,7 +140,7 @@ var wg = sync.WaitGroup{}
 // edge matrix and returns the best value and the best path while
 // utilizing goroutines
 func TSPBB(mtrx [][]uint) (uint, []int8) {
-	status = NewStatus(mtrx, 1<<30)
+	status = NewStatus(mtrx, 1<<28)
 	var i int8
 	rootFBPath := make([]int8, (status.vtxCount<<1)+2)
 	for i := int8(0); i < status.vtxCount; i++ {
@@ -151,7 +148,7 @@ func TSPBB(mtrx [][]uint) (uint, []int8) {
 		rootFBPath[status.vtxCount+i] = -1
 	}
 	status.Put(NewElement(rootFBPath, 0, 1))
-	for i = 0; i < 30; i++ {
+	for i = 0; i < 20; i++ {
 		wg.Add(1)
 		go extend()
 	}
@@ -163,8 +160,8 @@ func TSPBB(mtrx [][]uint) (uint, []int8) {
 }
 
 func extend() {
-	var i int8
 	var candidate *Element
+	var i int8
 	for status.curSize > 0 {
 		if status.solved {
 			break
@@ -173,9 +170,13 @@ func extend() {
 		if candidate.Count == status.vtxCount+1 {
 			status.solution = candidate
 			status.solved = true
-		} else if candidate.FBPath[candidate.LstVtx] == -1 {
-			// 0 has been visited in every path so we don't have to consider it
-			for i = 0; i < status.vtxCount; i++ {
+		} else {
+			if candidate.Count == status.vtxCount {
+				i = 0
+			} else {
+				i = 1
+			}
+			for ; i < status.vtxCount; i++ {
 				if candidate.FBPath[status.vtxCount+i] == -1 &&
 					status.adjMtrx[candidate.LstVtx][i] != 0 {
 					status.Put(getNewElement(candidate, i))
