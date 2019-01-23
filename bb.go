@@ -266,14 +266,3 @@ func actualCost(path []int8, adjMatrix [][]uint) uint {
 	}
 	return sum
 }
-
-func factorial(i int) int {
-	if i == 0 {
-		return 1
-	}
-	f := i
-	for j := i - 1; j > 0; j-- {
-		f *= j
-	}
-	return f
-}
