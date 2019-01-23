@@ -9,7 +9,7 @@ Calling `$ tsp` does something, depending on the configuration I am using at the
 
 Eventually the command is supposed to take a file path as an argument and have certain flags like the number of goroutines and the number of used OS threads as flags. Further there will be the option to chose between the concurrent and the parallel solution. So something along the lines of:
 ```
-$ tps <path> [--concurrent] [--os-threads <n>] [--go-routines <n>]
+$ tsp <path> [--concurrent] [--max-progs <n>] [--go-routines <n>]
 ```
 
 ## Implementation
