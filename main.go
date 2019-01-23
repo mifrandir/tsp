@@ -25,7 +25,7 @@ func tspCLI() {
 	g := graph.FromFile(file, 1)
 	fmt.Println("[INF] Read-Time:", time.Since(start))
 	start = time.Now()
-	cost, path := TSPBB2(g.Edges)
+	cost, path := TSPBB(g.Edges)
 	fmt.Println("[INF] TSP-Time:", time.Since(start))
 	fmt.Println("[OUT] Path:", path)
 	fmt.Println("[OUT] Predicted Cost:", cost)
