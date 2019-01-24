@@ -3,49 +3,72 @@ package main
 import (
 	"testing"
 
-	"github.com/miltfra/tools"
+	"github.com/miltfra/tools/ds/graph"
 )
 
-func BenchmarkTSPBB10(b *testing.B) {
+func BenchmarkTSPBB2887(b *testing.B) {
 	b.StopTimer()
+	g := graph.FromFile("/home/miltfra/projects/example_files/graphs/wild20.txt", 1)
 	for n := 0; n < b.N; n++ {
-		g := tools.RndDropoutGraph(10, 0.5)
 		b.StartTimer()
-		TSPBB(g)
+		TSPBB(g.Edges, 8, 1<<28, 7)
 		b.StopTimer()
 	}
+}
+func BenchmarkTSPBB2888(b *testing.B) {
+	b.StopTimer()
+	g := graph.FromFile("/home/miltfra/projects/example_files/graphs/wild20.txt", 1)
+	for n := 0; n < b.N; n++ {
+		b.StartTimer()
+		TSPBB(g.Edges, 8, 1<<28, 8)
+		b.StopTimer()
+	}
+}
 
-}
-func BenchmarkTSPBB20(b *testing.B) {
+func BenchmarkTSPBB28810(b *testing.B) {
 	b.StopTimer()
+	g := graph.FromFile("/home/miltfra/projects/example_files/graphs/wild20.txt", 1)
 	for n := 0; n < b.N; n++ {
-		g := tools.RndDropoutGraph(20, 0.5)
 		b.StartTimer()
-		TSPBB(g)
+		TSPBB(g.Edges, 8, 1<<28, 10)
 		b.StopTimer()
 	}
 }
 
-func BenchmarkTSPBB30(b *testing.B) {
+func BenchmarkTSPBB28815(b *testing.B) {
 	b.StopTimer()
+	g := graph.FromFile("/home/miltfra/projects/example_files/graphs/wild20.txt", 1)
 	for n := 0; n < b.N; n++ {
-		g := tools.RndDropoutGraph(30, 0.5)
 		b.StartTimer()
-		TSPBB(g)
+		TSPBB(g.Edges, 8, 1<<28, 15)
 		b.StopTimer()
 	}
 }
-func TestTSPBB20(t *testing.T) {
-	n := 20
-	g := tools.RndGraph(n)
-	cost, path := TSPBB(g)
-	actualCost := float64(0)
-	last := path[len(path)-1]
-	for i := 0; i < len(path); i++ {
-		actualCost += g[last][path[i]]
-		last = path[i]
+func BenchmarkTSPBB2787(b *testing.B) {
+	b.StopTimer()
+	g := graph.FromFile("/home/miltfra/projects/example_files/graphs/wild20.txt", 1)
+	for n := 0; n < b.N; n++ {
+		b.StartTimer()
+		TSPBB(g.Edges, 8, 1<<27, 7)
+		b.StopTimer()
 	}
-	if actualCost != cost {
-		t.FailNow()
+}
+
+func BenchmarkTSPBB2687(b *testing.B) {
+	b.StopTimer()
+	g := graph.FromFile("/home/miltfra/projects/example_files/graphs/wild20.txt", 1)
+	for n := 0; n < b.N; n++ {
+		b.StartTimer()
+		TSPBB(g.Edges, 8, 1<<26, 7)
+		b.StopTimer()
+	}
+}
+func BenchmarkTSPBB2987(b *testing.B) {
+	b.StopTimer()
+	g := graph.FromFile("/home/miltfra/projects/example_files/graphs/wild20.txt", 1)
+	for n := 0; n < b.N; n++ {
+		b.StartTimer()
+		TSPBB(g.Edges, 8, 1<<29, 7)
+		b.StopTimer()
 	}
 }

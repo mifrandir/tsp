@@ -3,14 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
-	"runtime"
 	"time"
 
 	"github.com/miltfra/tools/ds/graph"
 )
 
 func main() {
-	runtime.GOMAXPROCS(8)
 	tspCLI()
 }
 
@@ -25,7 +23,7 @@ func tspCLI() {
 	g := graph.FromFile(file, 1)
 	fmt.Println("[INF] Read-Time:", time.Since(start))
 	start = time.Now()
-	cost, path := TSPBB(g.Edges)
+	cost, path := TSPBB(g.Edges, 8, 1<<28, 7)
 	fmt.Println("[INF] TSP-Time:", time.Since(start))
 	fmt.Println("[OUT] Path:", path)
 	fmt.Println("[OUT] Predicted Cost:", cost)

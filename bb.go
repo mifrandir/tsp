@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 )
 
@@ -137,16 +138,17 @@ var status *Status
 // TSPBB calculates the Traveling Salesman Problem on a given
 // edge matrix and returns the best value and the best path while
 // utilizing goroutines
-func TSPBB(mtrx [][]uint) (uint, []int8) {
-	status = NewStatus(mtrx, 1<<28)
+func TSPBB(mtrx [][]uint, maxProcs, segSize int, grCnt int8) (uint, []int8) {
+	runtime.GOMAXPROCS(maxProcs)
+	status = NewStatus(mtrx, segSize)
 	var i int8
 	rootFBPath := make([]int8, (status.vtxCount<<1)+2)
-	for i := int8(0); i < status.vtxCount; i++ {
+	for i = 0; i < status.vtxCount; i++ {
 		rootFBPath[i] = -1
 		rootFBPath[status.vtxCount+i] = -1
 	}
 	status.Put(NewElement(rootFBPath, 0, 1))
-	for i = 0; i < 7; i++ {
+	for i = 0; i < grCnt; i++ {
 		status.wg.Add(1)
 		go extend()
 	}
