@@ -132,9 +132,7 @@ func (stat *Status) up(i int) {
 	stat.arr[i] = v
 }
 
-// AdjMatrix is the matrix of the current TSP calculation
 var status *Status
-var wg = sync.WaitGroup{}
 
 // TSPBB calculates the Traveling Salesman Problem on a given
 // edge matrix and returns the best value and the best path while
@@ -148,11 +146,11 @@ func TSPBB(mtrx [][]uint) (uint, []int8) {
 		rootFBPath[status.vtxCount+i] = -1
 	}
 	status.Put(NewElement(rootFBPath, 0, 1))
-	for i = 0; i < 20; i++ {
-		wg.Add(1)
+	for i = 0; i < 7; i++ {
+		status.wg.Add(1)
 		go extend()
 	}
-	wg.Wait()
+	status.wg.Wait()
 	if status.solved {
 		return status.solution.Boundary, elemToPath(status.solution)
 	}
@@ -184,7 +182,7 @@ func extend() {
 			}
 		}
 	}
-	wg.Done()
+	status.wg.Done()
 }
 
 // UpdateBoundary updates the boundary of the Status Element
