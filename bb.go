@@ -2,8 +2,11 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"runtime"
 	"sync"
+
+	"github.com/miltfra/tools/ds/matrix"
 )
 
 // Element implements a branch in the TSP-Tree
@@ -22,10 +25,10 @@ func NewElement(fbpath []int8, lv, cnt int8) *Element {
 // Status a queue of status elements
 type Status struct {
 	// TSP Stuff
-	adjMtrx  [][]uint
+	adj      []uint
 	solution *Element
 	solved   bool
-	vtxCount int8
+	vc       uint16
 	// Heap Stuff
 	arr     []*Element
 	segSize int
@@ -36,10 +39,10 @@ type Status struct {
 }
 
 // NewStatus returns a new Status heap of segment size N
-func NewStatus(adjMtrx [][]uint, segSize int) *Status {
+func NewStatus(adjMtrx []uint, segSize int) *Status {
 	return &Status{
 		// TSP Stuff
-		adjMtrx, nil, false, int8(len(adjMtrx)),
+		adjMtrx, nil, false, uint16(math.Sqrt(float64(len(adjMtrx)))),
 		// Heap Stuff
 		make([]*Element, segSize), segSize, 0,
 		// Sync Stuff
@@ -71,7 +74,7 @@ func (stat *Status) Get() *Element {
 	v := stat.arr[0]
 	stat.curSize--
 	stat.arr[0] = stat.arr[stat.curSize]
-	go stat.down(0)
+	defer stat.down(0)
 	return v
 }
 
@@ -133,53 +136,51 @@ func (stat *Status) up(i int) {
 	stat.arr[i] = v
 }
 
-var status *Status
-
 // TSPBB calculates the Traveling Salesman Problem on a given
 // edge matrix and returns the best value and the best path while
 // utilizing goroutines
-func TSPBB(mtrx [][]uint, maxProcs, segSize int, grCnt int8) (uint, []int8) {
+func TSPBB(mtrx [][]uint, maxProcs, segSize int, grCnt uint16) (uint, []int8) {
 	runtime.GOMAXPROCS(maxProcs)
-	status = NewStatus(mtrx, segSize)
-	var i int8
-	rootFBPath := make([]int8, (status.vtxCount<<1)+2)
-	for i = 0; i < status.vtxCount; i++ {
+	status := NewStatus(matrix.Flatten(mtrx), segSize)
+	var i uint16
+	rootFBPath := make([]int8, status.vc<<1)
+	for i = 0; i < status.vc; i++ {
 		rootFBPath[i] = -1
-		rootFBPath[status.vtxCount+i] = -1
+		rootFBPath[status.vc+i] = -1
 	}
 	status.Put(NewElement(rootFBPath, 0, 1))
 	for i = 0; i < grCnt; i++ {
 		status.wg.Add(1)
-		go extend()
+		go extend(status)
 	}
 	status.wg.Wait()
 	if status.solved {
-		return status.solution.Boundary, elemToPath(status.solution)
+		return status.solution.Boundary, elemToPath(status)
 	}
 	return 2147483647, make([]int8, 0)
 }
 
-func extend() {
+func extend(status *Status) {
 	var candidate *Element
-	var i int8
+	var i uint16
 	for status.curSize > 0 {
 		if status.solved {
 			break
 		}
 		candidate = status.Get()
-		if candidate.Count == status.vtxCount+1 {
+		if uint16(candidate.Count) == status.vc+1 {
 			status.solution = candidate
 			status.solved = true
 		} else {
-			if candidate.Count == status.vtxCount {
+			if uint16(candidate.Count) == status.vc {
 				i = 0
 			} else {
 				i = 1
 			}
-			for ; i < status.vtxCount; i++ {
-				if candidate.FBPath[status.vtxCount+i] == -1 &&
-					status.adjMtrx[candidate.LstVtx][i] != 0 {
-					status.Put(getNewElement(candidate, i))
+			for ; i < status.vc; i++ {
+				if candidate.FBPath[status.vc+i] == -1 &&
+					status.adj[uint16(candidate.LstVtx)*status.vc+i] != 0 {
+					status.Put(getNewElement(status, candidate, i))
 				}
 			}
 		}
@@ -189,21 +190,21 @@ func extend() {
 
 // UpdateBoundary updates the boundary of the Status Element
 // TODO: Use more PQs to manage the edges to update more quickly
-func UpdateBoundary(e *Element) {
+func UpdateBoundary(status *Status, e *Element) {
 	// Declaring variables so we don't need to allocate space multiple times
 	var min, v uint
-	var j, i int8
+	var j, i uint16
 	// Outgoing edges
 	var out uint
-	for i = 0; i < status.vtxCount; i++ {
+	for i = 0; i < status.vc; i++ {
 		if e.FBPath[i] != -1 {
 			// If there is a path we can add it's value immediately
-			out += status.adjMtrx[i][e.FBPath[i]]
+			out += status.adj[i*status.vc+uint16(e.FBPath[i])]
 		} else {
 			// Else we have to cycle through the matrix to find the lowest value
 			min = ^uint(0)
-			for j = 0; j < status.vtxCount; j++ {
-				if v = status.adjMtrx[i][j]; v != 0 && v < min {
+			for j = 0; j < status.vc; j++ {
+				if v = status.adj[i*status.vc+j]; v != 0 && v < min {
 					min = v
 				}
 			}
@@ -212,15 +213,15 @@ func UpdateBoundary(e *Element) {
 	}
 	// Incoming edges
 	var in uint
-	for i = 0; i < status.vtxCount; i++ {
-		if e.FBPath[status.vtxCount+i] != -1 {
+	for i = 0; i < status.vc; i++ {
+		if e.FBPath[status.vc+i] != -1 {
 			// If there is a path we can add it's value immediately
-			in += status.adjMtrx[e.FBPath[status.vtxCount+i]][i]
+			in += status.adj[uint16(e.FBPath[status.vc+i])*status.vc+i]
 		} else {
 			// Else we have to cycle through the matrix to find the lowest value
 			min = ^uint(0)
-			for j = 0; j < status.vtxCount; j++ {
-				if v = status.adjMtrx[j][i]; v != 0 && v < min {
+			for j = 0; j < status.vc; j++ {
+				if v = status.adj[j*status.vc+i]; v != 0 && v < min {
 					min = v
 				}
 			}
@@ -238,22 +239,23 @@ func UpdateBoundary(e *Element) {
 }
 
 // Adds a vertex to the paths of a candidate
-func getNewElement(candidate *Element, i int8) *Element {
-	fbPath := make([]int8, (status.vtxCount<<1)+2)
+func getNewElement(status *Status, candidate *Element, i uint16) *Element {
+	fbPath := make([]int8, status.vc<<1)
 	copy(fbPath, candidate.FBPath)
-	fbPath[candidate.LstVtx] = i
-	fbPath[status.vtxCount+i] = candidate.LstVtx
-	e := &Element{fbPath, i, candidate.Count + 1, 0}
-	UpdateBoundary(e)
+	fbPath[candidate.LstVtx] = int8(i)
+	fbPath[status.vc+i] = candidate.LstVtx
+	e := &Element{fbPath, int8(i), candidate.Count + 1, 0}
+	UpdateBoundary(status, e)
 	return e
 }
 
-func elemToPath(e *Element) []int8 {
-	path := make([]int8, status.vtxCount)
-	var i, next int8 // starts with 0 anyways
-	for i = 0; i < status.vtxCount; i++ {
+func elemToPath(status *Status) []int8 {
+	path := make([]int8, status.vc)
+	var i uint16 // starts with 0 anyways
+	var next int8
+	for i = 0; i < status.vc; i++ {
 		path[i] = next
-		next = e.FBPath[next]
+		next = status.solution.FBPath[next]
 	}
 	return path
 }
