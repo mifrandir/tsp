@@ -133,14 +133,12 @@ func (stat *Status) up(i int) {
 	stat.arr[i] = v
 }
 
-var status *Status
-
 // TSPBB calculates the Traveling Salesman Problem on a given
 // edge matrix and returns the best value and the best path while
 // utilizing goroutines
 func TSPBB(mtrx [][]uint, maxProcs, segSize int, grCnt int8) (uint, []int8) {
 	runtime.GOMAXPROCS(maxProcs)
-	status = NewStatus(mtrx, segSize)
+	status := NewStatus(mtrx, segSize)
 	var i int8
 	rootFBPath := make([]int8, (status.vtxCount<<1)+2)
 	for i = 0; i < status.vtxCount; i++ {
@@ -150,16 +148,16 @@ func TSPBB(mtrx [][]uint, maxProcs, segSize int, grCnt int8) (uint, []int8) {
 	status.Put(NewElement(rootFBPath, 0, 1))
 	for i = 0; i < grCnt; i++ {
 		status.wg.Add(1)
-		go extend()
+		go extend(status)
 	}
 	status.wg.Wait()
 	if status.solved {
-		return status.solution.Boundary, elemToPath(status.solution)
+		return status.solution.Boundary, elemToPath(status)
 	}
 	return 2147483647, make([]int8, 0)
 }
 
-func extend() {
+func extend(status *Status) {
 	var candidate *Element
 	var i int8
 	for status.curSize > 0 {
@@ -179,7 +177,7 @@ func extend() {
 			for ; i < status.vtxCount; i++ {
 				if candidate.FBPath[status.vtxCount+i] == -1 &&
 					status.adjMtrx[candidate.LstVtx][i] != 0 {
-					status.Put(getNewElement(candidate, i))
+					status.Put(getNewElement(status, candidate, i))
 				}
 			}
 		}
@@ -189,7 +187,7 @@ func extend() {
 
 // UpdateBoundary updates the boundary of the Status Element
 // TODO: Use more PQs to manage the edges to update more quickly
-func UpdateBoundary(e *Element) {
+func UpdateBoundary(status *Status, e *Element) {
 	// Declaring variables so we don't need to allocate space multiple times
 	var min, v uint
 	var j, i int8
@@ -238,22 +236,22 @@ func UpdateBoundary(e *Element) {
 }
 
 // Adds a vertex to the paths of a candidate
-func getNewElement(candidate *Element, i int8) *Element {
+func getNewElement(status *Status, candidate *Element, i int8) *Element {
 	fbPath := make([]int8, (status.vtxCount<<1)+2)
 	copy(fbPath, candidate.FBPath)
 	fbPath[candidate.LstVtx] = i
 	fbPath[status.vtxCount+i] = candidate.LstVtx
 	e := &Element{fbPath, i, candidate.Count + 1, 0}
-	UpdateBoundary(e)
+	UpdateBoundary(status, e)
 	return e
 }
 
-func elemToPath(e *Element) []int8 {
+func elemToPath(status *Status) []int8 {
 	path := make([]int8, status.vtxCount)
 	var i, next int8 // starts with 0 anyways
 	for i = 0; i < status.vtxCount; i++ {
 		path[i] = next
-		next = e.FBPath[next]
+		next = status.solution.FBPath[next]
 	}
 	return path
 }
