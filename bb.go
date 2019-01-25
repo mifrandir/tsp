@@ -74,7 +74,7 @@ func (stat *Status) Get() *Element {
 	v := stat.arr[0]
 	stat.curSize--
 	stat.arr[0] = stat.arr[stat.curSize]
-	defer stat.down(0)
+	go stat.down(0)
 	return v
 }
 
