@@ -1,6 +1,6 @@
 # Travelling Salesman Problem
 
-This program written in Golang finds the shortest Hamilton-Path on a given graph.
+This program written in Golang finds the shortest Hamiltonian-Path on a given graph.
 
 ## Usage
 
