@@ -29,10 +29,8 @@ As of 2019-01-22 the program uses a branch-and-bound approach to solve the probl
 
 It's as easy as:
 ```
-$ go get github.com/miltfra/tsp
+$ go get -u github.com/miltfra/tsp
 ```
-This should - in theory - install my [tools](https://github.com/miltfra/tools) package as well.
-
 ## Limitations
 
 Even though the program has solved every problem so far, I cannot gurantee that it will continue to do so. This is because in its current state one goroutine might find a roundtrip on top of the heap while another is still calculting an extension of another, better path. This should not be a problem in most cases though.
