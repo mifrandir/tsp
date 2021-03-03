@@ -53,7 +53,7 @@ Due to the sheer amount of possibilities it becomes extremely hard to find optim
 
 ### The Solution
 
-The way we approach this problem is using lower boundaries. We calculate a value which represents a definetive minimum length for each possible path that has a certain sub path.
+The way we approach this problem is using lower boundaries. We calculate a value which represents a definitive minimum length for each possible path that has a certain sub path.
 
 To do this, we start by calculating the lowest weight of an outgoing edge for every vertex. 
 Now we can add all of these together. We can do the same for incoming edges. 
